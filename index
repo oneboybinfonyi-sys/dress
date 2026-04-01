@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>33STYLE | 款式篩選圖庫</title>
+  <title>33STYLE | 款式盤點篩選圖庫</title>
   <style>
     :root { 
       --bg: #fafafa; 
@@ -31,23 +31,76 @@
       border: 1px solid var(--border);
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
       margin-bottom: 25px;
-      position: sticky;
-      top: 10px;
-      z-index: 100;
     }
 
-    .filter-group {
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .filter-title {
+    .filter-header h2 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .toggle-btn {
+      background: #fff;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: 0.2s;
+    }
+    .toggle-btn:hover { background: var(--hover-bg); }
+    .toggle-btn.active { background: var(--accent); color: #fff; }
+
+    .clear-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: 0.2s;
+    }
+    .clear-btn:hover { background: #000; }
+
+    .group { margin-bottom: 20px; }
+    .group-title {
       font-size: 14px;
       font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 8px;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .group-title::before {
+      content: '';
+      width: 4px;
+      height: 14px;
+      background: var(--accent);
+      display: inline-block;
+      border-radius: 2px;
     }
 
-    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
     
     .tag-btn {
       background: #f4f4f5;
@@ -58,65 +111,86 @@
       font-size: 13px;
       border: 1px solid transparent;
       transition: all 0.2s;
-    }
-
-    .tag-btn:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
-    .tag-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-    /* 圖片網格區 */
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 15px;
-    }
-
-    .gallery-item {
-      background: var(--card);
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      transition: transform 0.3s;
+      user-select: none;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
 
-    .gallery-item.hidden { display: none; }
-    .gallery-item:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-
-    .gallery-item img {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .item-info {
-      padding: 10px;
+    .tag-count {
       font-size: 11px;
-      color: var(--dim);
-      word-break: break-all;
-      line-height: 1.4;
+      background: #e2e8f0;
+      color: #64748b;
+      padding: 2px 6px;
+      border-radius: 10px;
+      transition: all 0.2s;
     }
+
+    .tag-btn:hover:not(.tag-empty) { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
+    .tag-btn:hover:not(.tag-empty) .tag-count { background: var(--accent); color: #fff; }
     
-    /* 清除篩選按鈕 */
-    .clear-btn {
-      background: #333;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
+    .tag-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3); }
+    .tag-btn.active .tag-count { background: #fff; color: var(--accent); }
+
+    /* 缺漏標籤專屬樣式 (數量為0) */
+    .tag-empty {
+      opacity: 0.5;
+      background: #ffffff;
+      color: #94a3b8;
+      border: 1px dashed #cbd5e1;
+      cursor: not-allowed;
+    }
+    .tag-empty .tag-count {
+      background: #f1f5f9;
+      color: #cbd5e1;
+    }
+
+    /* 折疊面板樣式 */
+    details.sub-collapse {
+      background: #f8f9fa;
       border-radius: 8px;
+      padding: 10px 15px;
+      border: 1px dashed #cbd5e1;
+      margin-top: 5px;
+    }
+    details.sub-collapse > summary {
       cursor: pointer;
       font-size: 13px;
-      margin-top: 10px;
-      width: 100%;
+      color: var(--accent);
+      font-weight: 600;
+      outline: none;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
     }
+    details.sub-collapse > summary::-webkit-details-marker { display: none; }
+    details.sub-collapse > summary::before { content: '▶'; font-size: 10px; transition: transform 0.2s ease; }
+    details.sub-collapse[open] > summary::before { transform: rotate(90deg); }
+    details.sub-collapse[open] > summary { margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+    .sub-group-title { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+
+    /* 圖片網格區 */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+    .gallery-item { background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); transition: transform 0.3s; display: flex; flex-direction: column; }
+    .gallery-item.hidden { display: none; }
+    .gallery-item:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+    .gallery-item img { width: 100%; height: 220px; object-fit: cover; display: block; }
+    .item-info { padding: 10px; font-size: 11px; color: var(--dim); word-break: break-all; line-height: 1.5; }
   </style>
 </head>
 <body>
 
 <div class="filter-container">
+  <div class="filter-header">
+    <h2>33STYLE 款式資料庫</h2>
+    <div class="header-actions">
+      <button id="toggle-all-btn" class="toggle-btn" onclick="toggleShowAll()">👀 檢視缺漏標籤</button>
+      <button class="clear-btn" onclick="resetFilters()">🔄 清除篩選</button>
+    </div>
+  </div>
   <div id="filter-ui"></div>
-  <button class="clear-btn" onclick="resetFilters()">🔄 清除所有篩選</button>
 </div>
 
 <div class="gallery-grid" id="gallery"></div>
@@ -126,139 +200,240 @@
   // 📦 在此貼上你上傳到 GitHub 的圖片完整檔名
   // ==========================================
   const uploadedFiles = [
-    "御姊_一字領-棉質-無-寬褲-全長-西裝布-無-無-無-高跟鞋-黑色.jpg",
-    "休閒運動_基本T-棉質-無-真理褲-極短-棉質-無-無-無-運動鞋-白色.jpg",
-    "性感_抹胸-蕾絲-無-無-無-無-包臀裙-大腿-皮革-長靴-黑色.jpg"
-    // 每次將新圖傳到 GitHub images 資料夾後，將檔名補在這個陣列即可
+    "御姊_短袖-圓領-基本T-棉質_褲裝-無-無-寬褲-全長-西裝布-無-無-無_無_無-無_運動鞋-白色.jpg",
+    "性感_無-無-抹胸-蕾絲_裙裝-無-無-無-無-無-包臀裙-大腿-皮革_西裝外套_絲襪-40D_高跟鞋-黑色.png",
+    "休閒運動_長袖-連帽-特殊造型-棉質_褲裝-無-無-工裝褲-落地-牛仔-無-無-無_無_無-無_帆布鞋-黑色.jpg"
   ];
 
-  // 系統字典 (對應你的產出邏輯)
-  const categoryKeys = ["風格", "上裝", "上裝材質", "連身", "褲裝版型", "褲裝長度", "褲裝材質", "裙裝", "裙長位置", "裙裝材質", "鞋款", "鞋色"];
+  // 匯入完整的貼標系統字典 (用於盤點缺口)
+  const fullCategories = {
+    "風格": ["無", "御姊", "休閒運動", "性感", "街頭潮流", "日系可愛", "韓系時尚", "露出"],
+    "上裝": ["無", "無袖", "短袖", "五分袖", "七分袖", "長袖", "Oversize", "長版"],
+    "上裝領型": ["無", "圓領", "V領", "方領", "高領", "襯衫領", "平口/一字領", "連帽"],
+    "上裝款式": ["無", "吊帶", "背心", "抹胸", "馬甲", "短版T", "基本T", "露肩", "襯衫", "特殊造型"],
+    "上裝材質": ["無", "棉質", "針織", "雪紡", "蕾絲", "絲綢", "牛仔", "皮革"],
+    "下裝大類": ["無", "連身", "褲裝", "裙裝"],
+    "連身款式": ["無", "連身洋裝", "連身褲", "吊帶裙", "吊帶褲"],
+    "連身長度": ["無", "短版", "中長版", "長版", "落地"],
+    "褲裝版型": ["無", "直筒褲", "寬褲", "喇叭褲", "緊身褲", "工裝褲", "真理褲", "破褲", "瑜珈褲", "熱褲"],
+    "褲裝長度": ["無", "極短", "三分", "五分", "七分", "九分", "全長", "落地"],
+    "褲裝材質": ["無", "牛仔", "西裝布", "棉質", "亞麻", "皮革", "燈芯絨"],
+    "裙裝款式": ["無", "包臀裙", "百褶裙", "A字裙", "魚尾裙", "蛋糕裙", "學生裙", "紗裙", "開衩裙"],
+    "裙長位置": ["無", "極短", "大腿", "膝上", "膝下", "腳踝"],
+    "裙裝材質": ["無", "皮革", "棉質", "蕾絲", "牛仔", "雪紡", "西裝布"],
+    "外套款式": ["無", "西裝外套", "針織衫/小香風", "牛仔外套", "皮衣", "風衣/大衣", "夾克/棒球外套", "羽絨/棉服"],
+    "襪類": ["無", "絲襪", "吊襪帶", "網襪", "羅紋襪", "褲襪", "大腿棉襪", "小腿襪", "短襪", "泡泡襪"],
+    "襪類細節": ["無", "5-20D", "40D", "80D", "油亮", "啞光"],
+    "鞋款": ["無", "低跟鞋", "高跟鞋", "短靴", "長靴", "膝上長靴", "馬丁靴", "運動鞋", "涼鞋", "拖鞋", "瑪莉珍鞋", "帆布鞋"],
+    "鞋色": ["無", "黑色", "白色", "米色", "亮色"]
+  };
+
+  const categoryKeys = Object.keys(fullCategories);
+
+  const layoutGroups = [
+    { title: "風格定位", keys: ["風格"] },
+    { title: "上裝系統", keys: ["上裝", "上裝領型", "上裝款式", "上裝材質"] },
+    { title: "下裝大類", keys: ["下裝大類"] },
+    { title: "下裝細節", keys: ["連身款式", "連身長度", "褲裝版型", "褲裝長度", "褲裝材質", "裙裝款式", "裙長位置", "裙裝材質"] },
+    { title: "外搭單品", keys: ["外套款式"] },
+    { title: "襪類配置", keys: ["襪類", "襪類細節"] },
+    { title: "鞋履配置", keys: ["鞋款", "鞋色"] }
+  ];
+
+  let tagsCountMap = {};
   let activeFilters = {};
+  let isShowAll = false; // 控制是否顯示 0 數量的標籤
+  let openDetails = {};  // 紀錄折疊面板開關狀態
 
-  // 初始化與渲染
-  function initGallery() {
+  function initSystem() {
+    // 1. 初始化計數器 (所有字典內的值都預設為 0)
+    categoryKeys.forEach(k => {
+      tagsCountMap[k] = {};
+      fullCategories[k].forEach(tag => tagsCountMap[k][tag] = 0);
+      activeFilters[k] = null;
+    });
+
+    // 2. 解析圖片並計算實際數量
     const gallery = document.getElementById('gallery');
-    const filterUI = document.getElementById('filter-ui');
     
-    // 收集所有出現過的標籤，避免顯示沒有圖片的空選項
-    let availableTags = {};
-    categoryKeys.forEach(k => availableTags[k] = new Set());
-
-    // 解析檔名並建立圖片卡片
     uploadedFiles.forEach(filename => {
-      // 移除副檔名
       const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.')) || filename;
-      
-      // 依照命名邏輯，先切底線，再切橫槓
-      const parts = nameWithoutExt.split('_');
+      const blocks = nameWithoutExt.split('_');
       let attributes = [];
-      if(parts.length >= 2) {
-        attributes.push(parts[0]); // 風格
-        attributes = attributes.concat(parts[1].split('-')); // 其他屬性
+      
+      if(blocks.length >= 6) {
+        attributes.push(blocks[0]);
+        attributes = attributes.concat(blocks[1].split('-'));
+        attributes = attributes.concat(blocks[2].split('-'));
+        attributes.push(blocks[3]);
+        attributes = attributes.concat(blocks[4].split('-'));
+        attributes = attributes.concat(blocks[5].split('-'));
       }
 
-      // 建立 HTML 元素
       const item = document.createElement('div');
       item.className = 'gallery-item';
       
       let infoHtml = '';
       attributes.forEach((attr, index) => {
         const key = categoryKeys[index];
-        if (attr && attr !== "無") {
+        if (key && attr && attr !== "無") {
           item.setAttribute(`data-${key}`, attr);
-          availableTags[key].add(attr);
-          infoHtml += `<span>#${attr} </span>`;
+          if (tagsCountMap[key][attr] !== undefined) {
+            tagsCountMap[key][attr]++;
+          }
+          infoHtml += `<span style="display:inline-block; margin-right:4px;">#${attr}</span>`;
         }
       });
 
-      // 設定 GitHub 相對路徑 (假設圖片放在同一層的 images 資料夾內)
-      const imgUrl = `./images/${filename}`;
-      
       item.innerHTML = `
-        <img src="${imgUrl}" alt="${nameWithoutExt}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x250?text=Image+Not+Found'">
+        <img src="./images/${filename}" alt="${nameWithoutExt}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x250?text=Image+Not+Found'">
         <div class="item-info">${infoHtml || '#無特定屬性'}</div>
       `;
       gallery.appendChild(item);
     });
 
-    // 動態生成篩選器 UI (只顯示有存在的標籤)
-    categoryKeys.forEach(key => {
-      if (availableTags[key].size > 0) {
-        activeFilters[key] = null; // 初始化篩選狀態
-        
-        const group = document.createElement('div');
-        group.className = 'filter-group';
-        group.innerHTML = `<div class="filter-title">${key}</div>`;
-        
-        const tagsWrap = document.createElement('div');
-        tagsWrap.className = 'tags';
+    renderFilters();
+  }
 
-        availableTags[key].forEach(tag => {
-          const btn = document.createElement('button');
-          btn.className = 'tag-btn';
-          btn.innerText = tag;
-          btn.onclick = () => toggleFilter(key, tag, btn);
-          tagsWrap.appendChild(btn);
-        });
+  // 切換檢視模式
+  window.toggleShowAll = function() {
+    isShowAll = !isShowAll;
+    const btn = document.getElementById('toggle-all-btn');
+    if (isShowAll) {
+      btn.classList.add('active');
+      btn.innerText = '🙈 隱藏缺漏標籤';
+    } else {
+      btn.classList.remove('active');
+      btn.innerText = '👀 檢視缺漏標籤';
+    }
+    renderFilters(); // 重新繪製 UI
+  }
 
-        group.appendChild(tagsWrap);
-        filterUI.appendChild(group);
+  function renderFilters() {
+    const filterUI = document.getElementById('filter-ui');
+    filterUI.innerHTML = ''; // 清空重新渲染
+
+    layoutGroups.forEach(group => {
+      // 檢查此群組內是否有任何數量 > 0 的標籤
+      let hasAnyTag = group.keys.some(key => {
+        return Object.values(tagsCountMap[key]).some(count => count > 0);
+      });
+
+      // 如果當前沒開啟「強制檢視」，且整個群組都沒有照片，就隱藏整個區塊
+      if (!isShowAll && !hasAnyTag) return;
+
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'group';
+      groupDiv.innerHTML = `<div class="group-title">${group.title}</div>`;
+
+      const isMultiKey = group.keys.length > 1;
+
+      if (!isMultiKey) {
+        const wrap = createTagButtons(group.keys[0], fullCategories[group.keys[0]]);
+        if(wrap) groupDiv.appendChild(wrap);
+      } else {
+        const mainKey = group.keys[0];
+        const mainWrap = createTagButtons(mainKey, fullCategories[mainKey]);
+        if(mainWrap) groupDiv.appendChild(mainWrap);
+
+        let hasSubTags = false;
+        const details = document.createElement('details');
+        details.className = 'sub-collapse';
+        if (openDetails[group.title]) details.open = true; // 記憶上一次的開關狀態
+        
+        details.ontoggle = (e) => { openDetails[group.title] = e.target.open; };
+        details.innerHTML = `<summary>進階細節篩選</summary>`;
+
+        for (let i = 1; i < group.keys.length; i++) {
+          const subKey = group.keys[i];
+          const subWrapButtons = createTagButtons(subKey, fullCategories[subKey]);
+          
+          if (subWrapButtons) {
+            hasSubTags = true;
+            const subWrap = document.createElement('div');
+            subWrap.innerHTML = `<div class="sub-group-title">${subKey}</div>`;
+            subWrap.appendChild(subWrapButtons);
+            details.appendChild(subWrap);
+          }
+        }
+
+        if (hasSubTags) groupDiv.appendChild(details);
       }
+
+      filterUI.appendChild(groupDiv);
     });
   }
 
-  // 點擊篩選邏輯
+  // 產生按鈕邏輯 (加入對數量 0 的判斷)
+  function createTagButtons(category, fullTagsArray) {
+    let visibleCount = 0;
+    const wrap = document.createElement('div');
+    wrap.className = 'tags';
+
+    fullTagsArray.forEach(tag => {
+      const count = tagsCountMap[category][tag];
+      
+      // 如果沒有開啟強制顯示，且數量為0，就跳過不生成此按鈕
+      if (!isShowAll && count === 0) return;
+      
+      visibleCount++;
+      const btn = document.createElement('button');
+      btn.className = 'tag-btn';
+      if (activeFilters[category] === tag) btn.classList.add('active');
+      
+      // 如果數量為 0，加上專屬的 empty 樣式，並取消點擊篩選功能
+      if (count === 0) {
+        btn.classList.add('tag-empty');
+        btn.innerHTML = `${tag} <span class="tag-count">0</span>`;
+        btn.onclick = () => alert("目前尚無此屬性的照片喔！");
+      } else {
+        btn.innerHTML = `${tag} <span class="tag-count">${count}</span>`;
+        btn.onclick = () => toggleFilter(category, tag, btn);
+      }
+      
+      wrap.appendChild(btn);
+    });
+
+    return visibleCount > 0 ? wrap : null;
+  }
+
   function toggleFilter(category, tag, btnElement) {
-    const siblings = btnElement.parentElement.querySelectorAll('.tag-btn');
-    
-    // 如果點擊已經啟動的按鈕，則取消該類別篩選
+    const siblings = btnElement.parentElement.querySelectorAll('.tag-btn:not(.tag-empty)');
     if (btnElement.classList.contains('active')) {
       btnElement.classList.remove('active');
       activeFilters[category] = null;
     } else {
-      // 切換為啟動狀態
       siblings.forEach(b => b.classList.remove('active'));
       btnElement.classList.add('active');
       activeFilters[category] = tag;
     }
-    
     applyFilters();
   }
 
-  // 執行篩選比對
   function applyFilters() {
     const items = document.querySelectorAll('.gallery-item');
     items.forEach(item => {
       let isMatch = true;
-      
       for (const [key, selectedTag] of Object.entries(activeFilters)) {
         if (selectedTag) {
-          const itemTag = item.getAttribute(`data-${key}`);
-          if (itemTag !== selectedTag) {
+          if (item.getAttribute(`data-${key}`) !== selectedTag) {
             isMatch = false;
             break;
           }
         }
       }
-      
-      if (isMatch) {
-        item.classList.remove('hidden');
-      } else {
-        item.classList.add('hidden');
-      }
+      item.classList.toggle('hidden', !isMatch);
     });
   }
 
-  // 重置篩選
   window.resetFilters = function() {
-    document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
-    for (let key in activeFilters) activeFilters[key] = null;
+    activeFilters = {};
+    categoryKeys.forEach(k => activeFilters[k] = null);
+    renderFilters(); // 重繪確保 active class 消失
     applyFilters();
   }
 
-  // 啟動
-  document.addEventListener('DOMContentLoaded', initGallery);
+  document.addEventListener('DOMContentLoaded', initSystem);
 </script>
 
 </body>
